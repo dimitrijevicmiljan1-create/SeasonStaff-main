@@ -1,0 +1,179 @@
+# SeasonStaff — Cursor Project Rules
+
+## Šta je SeasonStaff
+
+Ultra simple mobile-first shift organization SaaS za sezonske biznise.
+Dva korisnička kanala, jedan backend.
+
+**Admin Platform** (web + mobile web) → Owner, Manager
+**Employee App** (FlutterFlow mobile) → Employee
+
+Sve product odluke moraju služiti jednoj rečenici:
+> "Ultra simple mobile-first shift organization system koji omogućava menadžerima da organizuju smene i zaposlenima da kroz namensku mobilnu aplikaciju uvek znaju kada rade, koliko su radili i šta se od njih očekuje."
+
+---
+
+## Tech Stack
+
+### Admin Platform
+- Framework: Next.js App Router
+- Styling: Tailwind CSS (mobile-first)
+- UI: shadcn/ui
+- State: Zustand (UI only)
+- Server state: TanStack Query
+- Forms: React Hook Form + Zod
+- Drag & drop: dnd-kit
+- Animation: Framer Motion (minimal)
+
+### Employee App
+- FlutterFlow mobile app
+
+### Backend (shared — jedan za oba klijenta)
+- Backend: Supabase
+- DB: PostgreSQL
+- Auth: Supabase Auth
+- Security: Supabase RLS
+- Storage: Supabase Storage
+- Hosting: Vercel
+
+### Forbidden
+Ne koristiti: Prisma, NestJS, Express, Redis, microservices, CQRS, WebSockets, realtime sync layer
+
+---
+
+## Arhitektura — kritična pravila
+
+- **1 owner = 1 organization** — multi-org nije deo MVP-a
+- **Employee App NIJE poseban sistem** — koristi isti Supabase projekat, iste tabele, isti auth, isti RLS
+- **Jedan backend za oba klijenta** — ne praviti poseban employee backend
+- **Svaki query mora biti organization-scoped** — user ne sme videti tuđe podatke
+- **snake_case everywhere** — `employee_id`, ne `employeeId`
+- **Supabase MCP je jedini DB workflow** — ne koristiti migration fajlove tokom MVP razvoja
+
+---
+
+## Role sistem
+
+| Role | Pristup |
+|------|---------|
+| owner | Full organization access |
+| manager | Operational management |
+| employee | Own data only |
+
+---
+
+## Core tabele
+
+`organizations` · `profiles` · `positions` · `employees` · `shifts` · `requests` · `attendance_logs` · `notifications`
+
+**shifts je najvažnija tabela** — Weekly Shift Board je najvažniji deo sistema.
+
+Required DB indexes: `organization_id`, `employee_id`, `shift_date`, `status`
+
+---
+
+## Šta se NE gradi (MVP lock)
+
+- Payroll / salary / overtime
+- Realtime / WebSocket / live collaboration
+- GPS, QR, biometric attendance
+- Chat sistem
+- AI scheduling
+- Multi-organization
+- Complex analytics / reporting
+- Enterprise permissions
+
+**Realtime lock:** dozvoljeno je refresh on open, refresh on focus, pull-to-refresh. Ništa više.
+
+---
+
+## Weekly Shift Board — prioritet #1
+
+- Rows = zaposleni, Columns = dani u nedelji
+- Mora raditi fluidno na telefonu
+- Smooth horizontal scroll, large touch targets
+- Drag & drop (dnd-kit)
+- Copy previous week funkcija
+- Sve vezano za Shift Board mora biti performance-optimizovano
+
+---
+
+## Request sistem
+
+Dva tipa: `shift_swap` i `time_off`.
+Flow: Employee šalje → Manager approve/reject → Employee dobija notifikaciju.
+Ne uvoditi zasebne request sisteme — koristiti jedinstveni `requests` tabelu sa `type` poljem.
+
+---
+
+## Attendance
+
+Ultra jednostavno: manual check-in / check-out sa timestamp logging.
+Bez GPS, QR, biometrics, geofencing.
+
+---
+
+## Performance pravila
+
+- Minimal payload size
+- Avoid heavy joins, avoid overfetching
+- Optimistic updates
+- Skeleton loaders
+- Code splitting
+- Lazy loading
+
+---
+
+## Edge Functions
+
+Koristiti SAMO za: invite email, password setup, scheduled reminders, notification dispatch.
+Ne uvoditi business logic u Edge Functions.
+
+---
+
+## Tim i ownership
+
+- **Ivan** — jedini backend developer (Supabase, PostgreSQL, Auth, RLS, Edge Functions)
+- **Frontend tim** — radi paralelno, samostalno, sa mock data
+- **Ivan** — spaja frontend sa Supabase kada backend faza bude gotova
+
+Frontend tim NE treba Supabase pristup tokom razvoja. Ne predlagati frontend/backend integraciju pre nego što Ivan to eksplicitno kaže.
+
+---
+
+## Trenutni status projekta
+
+| Stavka | Status |
+|--------|--------|
+| GitHub repo | ✅ Spreman, docs/ folder commitan |
+| Supabase projekt | ✅ Kreiran |
+| Cursor Pro + Claude Pro | ✅ Aktivno |
+| Claude Code | ✅ Instaliran (v2.1.159) |
+| GStack | ✅ Aktivan u SeasonStaff (`/review` komanda dostupna) |
+| Frontend (Admin Platform) | ✅ Tim radi samostalno sa mock data |
+| Frontend ↔ Supabase | ❌ Nije spojeno (spaja Ivan naknadno) |
+
+**Aktivna faza: Phase 1 — Auth i organization system**
+
+Phase 1 fokus:
+- Owner onboarding i signup
+- Organization creation
+- Employee invitation flow
+- Employee App authentication
+- Role sistem
+- RLS foundation
+
+---
+
+## Anti-patterns — nikad ne raditi
+
+- Enterprise abstractions
+- Unnecessary complexity
+- Scope creep
+- Feature creep van MVP-a
+- Realtime bez validacije potrebe
+- Heavy payloads
+- Poseban backend za Employee App
+- Mešanje admin i employee iskustava
+
+**Simple > clever. Working > scalable. Mobile UX > desktop UX.**

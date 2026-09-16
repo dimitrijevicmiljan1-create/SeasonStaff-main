@@ -1,0 +1,1 @@
+Remove all console.log debug statements that were added during testing. Search the entire src/ directory for console.log statements and remove them, but only the ones we added for debugging (AUTH CALLBACK URL, ALL PARAMS, TOKEN HASH, TYPE, VERIFY RESULT). Keep any existing error logging that was part of the original code.

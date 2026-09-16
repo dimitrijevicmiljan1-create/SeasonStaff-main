@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+:root {
+  --app: #f8f9fa;
+  --surface: #ffffff;
+  --subtle: #f1f3f5;
+  --muted: #e9ecef;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-subtle: #eff6ff;
+  --status-pending: #ca8a04;
+  --status-pending-bg: #fefce8;
+  --status-approved: #16a34a;
+  --status-approved-bg: #f0fdf4;
+  --status-rejected: #dc2626;
+  --status-rejected-bg: #fef2f2;
+  --shadow-card: 0 1px 2px 0 rgb(17 24 39 / 0.04);
+}
+
+@theme inline {
+  --color-app: var(--app);
+  --color-surface: var(--surface);
+  --color-subtle: var(--subtle);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-status-pending: var(--status-pending);
+  --color-status-pending-bg: var(--status-pending-bg);
+  --color-status-approved: var(--status-approved);
+  --color-status-approved-bg: var(--status-approved-bg);
+  --color-status-rejected: var(--status-rejected);
+  --color-status-rejected-bg: var(--status-rejected-bg);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--app);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  pointer-events: auto;
+}
+
+/*
+ * App mount stays interactive even if Radix scroll-lock sets pointer-events:none on body.
+ */
+.app-mount {
+  pointer-events: auto;
+  min-height: 100%;
+}
+
+/*
+ * Mobile WebKit: main content layer + reliable touch targets (no isolation — it
+ * breaks hit-testing with sticky/backdrop chrome on iOS).
+ */
+.app-interactive-layer {
+  position: relative;
+  z-index: 0;
+  pointer-events: auto;
+}
+
+.app-interactive-layer :is(
+  a[href],
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  summary,
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="link"]
+) {
+  touch-action: manipulation;
+}
+
+/* Native selects inside Radix dialogs — iOS WebKit hit-testing */
+[data-radix-dialog-content] select {
+  position: relative;
+  z-index: 1;
+  touch-action: manipulation;
+  -webkit-appearance: menulist;
+  appearance: menulist;
+}
+
+/* Scroll regions must not steal taps from controls above/below on iOS */
+.app-scroll-region {
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 1.5s ease-in-out infinite;
+}
